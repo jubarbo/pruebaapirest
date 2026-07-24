@@ -11,7 +11,7 @@ export const getCards = async (req, res) => {
             throw new Error(`Error ${response.status}`);
         }
         const data = await response.json();
-        res.json(data)
+        res.json({ data, fechaHoy: new Date() })
 
     } catch (error) {
         console.log(error)
