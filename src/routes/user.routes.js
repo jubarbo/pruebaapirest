@@ -8,3 +8,4 @@ router.get('/', userController.getUsers)
 router.post('/', userController.postUser)
 
 export default router
+
