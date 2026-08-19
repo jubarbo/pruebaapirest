@@ -1,8 +1,20 @@
 import prisma from '../lib/prisma.js'
+import bcrypt from 'bcrypt'
+
+const userSelect = {
+    id: true,
+    username: true,
+    name: true,
+    email: true,
+    role: true,
+    isActive: true,
+    createdAt: true,
+    updatedAt: true
+}
 
 export const getUsers = async (req, res) => {
     try {
-        const users = await prisma.user.findMany()
+        const users = await prisma.user.findMany({ select: userSelect })
         res.json(users)
     } catch (error) {
         console.log(error)
@@ -13,7 +25,10 @@ export const getUsers = async (req, res) => {
 export const getUserById = async (req, res) => {
     try {
         const { id } = req.params
-        const user = await prisma.user.findUnique({ where: { id: Number(id) } })
+        const user = await prisma.user.findUnique({
+            where: { id: Number(id) },
+            select: userSelect
+        })
 
         if (!user) {
             return res.status(404).json({ error: 'Usuario no encontrado' })
@@ -29,7 +44,11 @@ export const getUserById = async (req, res) => {
 export const createUser = async (req, res) => {
     try {
         const { name, email, password } = req.body
-        const user = await prisma.user.create({ data: { name, email, password } })
+        const hashedPassword = await bcrypt.hash(password, 10)
+        const user = await prisma.user.create({
+            data: { name, email, password: hashedPassword },
+            select: userSelect
+        })
         res.status(201).json(user)
     } catch (error) {
         console.log(error)
@@ -41,9 +60,16 @@ export const updateUser = async (req, res) => {
     try {
         const { id } = req.params
         const { name, email, password } = req.body
+        const data = { name, email }
+
+        if (password) {
+            data.password = await bcrypt.hash(password, 10)
+        }
+
         const user = await prisma.user.update({
             where: { id: Number(id) },
-            data: { name, email, password }
+            data,
+            select: userSelect
         })
         res.json(user)
     } catch (error) {
