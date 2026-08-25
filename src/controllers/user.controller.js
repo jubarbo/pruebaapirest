@@ -43,10 +43,10 @@ export const getUserById = async (req, res) => {
 
 export const createUser = async (req, res) => {
     try {
-        const { name, email, password } = req.body
+        const { username, name, email, password } = req.body
         const hashedPassword = await bcrypt.hash(password, 10)
         const user = await prisma.user.create({
-            data: { name, email, password: hashedPassword },
+            data: { username, name, email, password: hashedPassword },
             select: userSelect
         })
         res.status(201).json(user)
@@ -55,12 +55,11 @@ export const createUser = async (req, res) => {
         res.status(500).json({ error: error.message })
     }
 }
-
 export const updateUser = async (req, res) => {
     try {
         const { id } = req.params
-        const { name, email, password } = req.body
-        const data = { name, email }
+        const { username, name, email, password } = req.body
+        const data = { username, name, email }
 
         if (password) {
             data.password = await bcrypt.hash(password, 10)
